@@ -9,19 +9,22 @@
     "atom": ">=0.50.0"
   },
   "dependencies": {
-    "lodash": "^2.4.1",
     "ansi-to-html": "^0.3.0",
-    "temp": "^0.8.1",
-    "fs-plus": "^2.4.0",
     "atom-space-pen-views": "^2.0.3",
+    "fs-plus": "^2.4.0",
+    "lodash": "^2.4.1",
+    "lson": "^1.0.3",
+    "temp": "^0.8.1",
     "xregexp": "^2.0.0"
   },
   "devDependencies": {
-    "jshint": "^2.5.11",
-    "jscs": "^1.9.0"
+    "LiveScript": "^1.3.1",
+    "jscs": "^1.9.0",
+    "jshint": "^2.5.11"
   },
   "scripts": {
-    "test": "./node_modules/.bin/jscs lib/*.js spec/*.js && ./node_modules/.bin/jshint lib/*.js spec/*.js"
+    "test": "./node_modules/.bin/jscs lib/*.js spec/*.js && ./node_modules/.bin/jshint lib/*.js spec/*.js",
+    "build": "lsc -cbo lib/tools src/tools"
   },
   "keywords": [
     "build",
