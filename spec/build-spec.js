@@ -24,6 +24,8 @@ describe('Build', function() {
   var syntaxErrorAtomBuildFile = __dirname + '/fixture/.atom-build.syntax-error.json';
   var errorMatchAtomBuildFile = __dirname + '/fixture/.atom-build.error-match.json';
   var errorMatchNLCAtomBuildFile = __dirname + '/fixture/.atom-build.error-match-no-line-col.json';
+  var errorMatchMultiAtomBuildFile = __dirname + '/fixture/.atom-build.error-match-multiple.json';
+  var errorMatchMultiFirstAtomBuildFile = __dirname + '/fixture/.atom-build.error-match-multiple-first.json';
 
   var directory = null;
   var workspaceElement = null;
@@ -35,7 +37,7 @@ describe('Build', function() {
     atom.project.setPaths([ directory ]);
 
     atom.config.set('build.buildOnSave', false);
-    atom.config.set('build.keepVisible', false);
+    atom.config.set('build.panelVisibility', 'Toggle');
     atom.config.set('build.saveOnBuild', false);
 
     // Set up dependencies
@@ -72,8 +74,37 @@ describe('Build', function() {
     fs.removeSync(directory);
   });
 
+  describe('when panel visibility is set to show on error', function() {
+    it('should only show an the build panel if a build fails', function () {
+      atom.config.set('build.panelVisibility', 'Show on Error');
+
+      fs.writeFileSync(directory + 'Makefile', fs.readFileSync(goodMakefile));
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      /* Give it some reasonable time to show itself if there is a bug */
+      waits(1000);
+
+      runs(function() {
+        expect(workspaceElement.querySelector('.build')).not.toExist();
+      });
+
+      runs(function () {
+        fs.writeFileSync(directory + 'Makefile', fs.readFileSync(badMakefile));
+        atom.commands.dispatch(workspaceElement, 'build:trigger');
+      });
+
+      waitsFor(function() {
+        return workspaceElement.querySelector('.build');
+      });
+
+      runs(function() {
+        expect(workspaceElement.querySelector('.build .output').textContent).toMatch(/Very bad\.\.\./);
+      });
+    });
+  });
+
   describe('when package is activated', function() {
-    it('should not show build window if keepVisible is false', function() {
+    it('should not show build window if panelVisibility is Toggle ', function() {
       expect(workspaceElement.querySelector('.build')).not.toExist();
     });
   });
@@ -82,7 +113,7 @@ describe('Build', function() {
     it('should not leave multiple panels behind', function() {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.config.set('build.keepVisible', true);
+      atom.config.set('build.panelVisibility', 'Keep Visible');
 
       fs.writeFileSync(directory + 'Makefile', fs.readFileSync(goodMakefile));
       atom.commands.dispatch(workspaceElement, 'build:trigger');
@@ -786,6 +817,128 @@ describe('Build', function() {
       runs(function() {
         var editor = atom.workspace.getActiveTextEditor();
         expect(editor.getTitle()).toEqual('.atom-build.json');
+      });
+    });
+
+    it('should cycle through the file if multiple error occurred', function () {
+      expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
+
+      fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(errorMatchMultiAtomBuildFile));
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      waitsFor(function() {
+        return workspaceElement.querySelector('.build .title').classList.contains('error');
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(2);
+        expect(bufferPosition.column).toEqual(7);
+        atom.workspace.getActivePane().destroyActiveItem();
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(1);
+        expect(bufferPosition.column).toEqual(4);
+        atom.workspace.getActivePane().destroyActiveItem();
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(2);
+        expect(bufferPosition.column).toEqual(7);
+      });
+    });
+
+    it('should jump to first error', function () {
+      expect(workspaceElement.querySelector('.build-confirm')).not.toExist();
+
+      fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(errorMatchMultiFirstAtomBuildFile));
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      waitsFor(function() {
+        return workspaceElement.querySelector('.build .title').classList.contains('error');
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match-first');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(2);
+        expect(bufferPosition.column).toEqual(7);
+        atom.workspace.getActivePane().destroyActiveItem();
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(1);
+        expect(bufferPosition.column).toEqual(4);
+        atom.workspace.getActivePane().destroyActiveItem();
+      });
+
+      runs(function() {
+        atom.commands.dispatch(workspaceElement, 'build:error-match-first');
+      });
+
+      waitsFor(function() {
+        return atom.workspace.getActiveTextEditor();
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        var bufferPosition = editor.getCursorBufferPosition();
+        expect(editor.getTitle()).toEqual('.atom-build.json');
+        expect(bufferPosition.row).toEqual(2);
+        expect(bufferPosition.column).toEqual(7);
       });
     });
   });
