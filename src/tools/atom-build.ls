@@ -3,6 +3,8 @@ require! {
   lson: {parseFile}
 }
 
+module.exports.niceName = 'Custom file (.atom-build.json)'
+
 module.exports.isEligable = (path)-> fs.existsSync "#{path}/.atom-build.lson"
 
 module.exports.settings = (path)->
