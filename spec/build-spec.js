@@ -34,6 +34,7 @@ describe('Build', function() {
     atom.config.set('build.buildOnSave', false);
     atom.config.set('build.panelVisibility', 'Toggle');
     atom.config.set('build.saveOnBuild', false);
+    atom.config.set('build.stealFocus', true);
 
     // Set up dependencies
     fs.copySync(path.join(__dirname, 'fixture', 'node_modules'), path.join(directory, 'node_modules'));
@@ -488,6 +489,7 @@ describe('Build', function() {
 
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
+      process.env.FROM_PROCESS_ENV = '{FILE_ACTIVE}';
       fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(replaceAtomBuildFile));
 
       waitsForPromise(function() {
@@ -509,6 +511,7 @@ describe('Build', function() {
         expect(output.indexOf('PROJECT_PATH=' + directory.substring(0, -1))).not.toBe(-1);
         expect(output.indexOf('FILE_ACTIVE=' + directory + '.atom-build.json')).not.toBe(-1);
         expect(output.indexOf('FROM_ENV=' + directory + '.atom-build.json')).not.toBe(-1);
+        expect(output.indexOf('FROM_PROCESS_ENV=' + directory + '.atom-build.json')).not.toBe(-1);
         expect(output.indexOf('FILE_ACTIVE_NAME=.atom-build.json')).not.toBe(-1);
         expect(output.indexOf('FILE_ACTIVE_NAME_BASE=.atom-build')).not.toBe(-1);
       });
@@ -614,6 +617,42 @@ describe('Build', function() {
       atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
 
       expect(workspaceElement.querySelector('.build')).toExist();
+    });
+  });
+
+  describe('when build is triggered, focus should adhere the stealFocus config', function () {
+    it('should focus the build panel if stealFocus is true', function () {
+      expect(workspaceElement.querySelector('.build')).not.toExist();
+
+      fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(goodAtomBuildfile));
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      waitsFor(function() {
+        return workspaceElement.querySelector('.build');
+      });
+
+      runs(function() {
+        expect(document.activeElement).toHaveClass('build');
+      });
+    });
+
+    it('should leave focus untouched if stealFocus is false', function () {
+      expect(workspaceElement.querySelector('.build')).not.toExist();
+
+      atom.config.set('build.stealFocus', false);
+      var activeElement = document.activeElement;
+
+      fs.writeFileSync(directory + '.atom-build.json', fs.readFileSync(goodAtomBuildfile));
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      waitsFor(function() {
+        return workspaceElement.querySelector('.build');
+      });
+
+      runs(function() {
+        expect(document.activeElement).toEqual(activeElement);
+        expect(document.activeElement).not.toHaveClass('build');
+      });
     });
   });
 });
