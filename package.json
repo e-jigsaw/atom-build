@@ -1,7 +1,7 @@
 {
   "name": "build",
   "main": "./lib/build",
-  "version": "0.35.0",
+  "version": "0.36.1",
   "description": "Build your current project, directly from Atom",
   "repository": "https://github.com/noseglid/atom-build",
   "license": "MIT",
@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "ansi-to-html": "^0.3.0",
+    "lodash": "^3.8.0",
+    "bluebird": "^2.9.25",
+    "fs-extra": "^0.18.3",
     "atom-space-pen-views": "^2.0.3",
     "fs-plus": "^2.4.0",
-    "lodash": "^2.4.1",
     "lson": "^1.0.3",
     "temp": "^0.8.1",
     "xregexp": "^2.0.0",
