@@ -55,35 +55,6 @@ describe('Build', function() {
     fs.removeAsync(directory);
   });
 
-  describe('when panel visibility is set to show on error', function() {
-    it('should only show an the build panel if a build fails', function () {
-      atom.config.set('build.panelVisibility', 'Show on Error');
-
-      fs.writeFileSync(directory + 'Makefile', fs.readFileSync(goodMakefile));
-      atom.commands.dispatch(workspaceElement, 'build:trigger');
-
-      /* Give it some reasonable time to show itself if there is a bug */
-      waits(1000);
-
-      runs(function() {
-        expect(workspaceElement.querySelector('.build')).not.toExist();
-      });
-
-      runs(function () {
-        fs.writeFileSync(directory + 'Makefile', fs.readFileSync(badMakefile));
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
-      });
-
-      waitsFor(function() {
-        return workspaceElement.querySelector('.build');
-      });
-
-      runs(function() {
-        expect(workspaceElement.querySelector('.build .output').textContent).toMatch(/Very bad\.\.\./);
-      });
-    });
-  });
-
   describe('when package is activated', function() {
     it('should not show build window if panelVisibility is Toggle ', function() {
       expect(workspaceElement.querySelector('.build')).not.toExist();
@@ -94,7 +65,7 @@ describe('Build', function() {
     it('should not leave multiple panels behind', function() {
       expect(workspaceElement.querySelector('.build')).not.toExist();
 
-      atom.config.set('build.panelVisibility', 'Keep Visible');
+      atom.commands.dispatch(workspaceElement, 'build:toggle-panel');
 
       fs.writeFileSync(directory + 'Makefile', fs.readFileSync(goodMakefile));
       atom.commands.dispatch(workspaceElement, 'build:trigger');
@@ -698,6 +669,25 @@ describe('Build', function() {
         expect(workspaceElement.querySelector('.build')).not.toExist();
       });
     });
+
+    it('should not attempt to build if buildOnSave is true and no build tool exists', function () {
+      atom.config.set('build.buildOnSave', true);
+
+      waitsForPromise(function() {
+        return atom.workspace.open('dummy');
+      });
+
+      runs(function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        editor.save();
+      });
+
+      waits(200);
+
+      runs(function() {
+        expect(atom.notifications.getNotifications().length).toEqual(0);
+      });
+    });
   });
 
   describe('when multiple project roots are open', function () {
@@ -770,6 +760,23 @@ describe('Build', function() {
       runs(function() {
         expect(document.activeElement).toEqual(activeElement);
         expect(document.activeElement).not.toHaveClass('build');
+      });
+    });
+  });
+
+  describe('when no build tools are available', function () {
+    it('should show an error', function () {
+      expect(workspaceElement.querySelector('.build')).not.toExist();
+      atom.commands.dispatch(workspaceElement, 'build:trigger');
+
+      waitsFor(function() {
+        return atom.notifications.getNotifications().length > 0;
+      });
+
+      runs(function() {
+        var notification = atom.notifications.getNotifications()[0];
+        expect(notification.getType()).toEqual('error');
+        expect(notification.getMessage()).toEqual('No eligible build tool.');
       });
     });
   });
