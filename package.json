@@ -1,7 +1,7 @@
 {
   "name": "build",
   "main": "./lib/build",
-  "version": "0.41.0",
+  "version": "0.42.0",
   "description": "Build your current project, directly from Atom",
   "repository": "https://github.com/noseglid/atom-build",
   "license": "MIT",
@@ -10,21 +10,28 @@
   },
   "dependencies": {
     "ansi-to-html": "^0.3.0",
-    "lodash": "^3.8.0",
+    "atom-space-pen-views": "^2.0.3",
     "bluebird": "^2.9.25",
     "fs-extra": "^0.18.3",
-    "atom-space-pen-views": "^2.0.3",
-    "fs-plus": "^2.4.0",
-    "lson": "^1.0.3",
-    "temp": "^0.8.1",
-    "xregexp": "^2.0.0",
+    "getmac": "^1.0.7",
+    "lodash": "^3.8.0",
     "node-uuid": "^1.4.3",
-    "getmac": "^1.0.7"
+    "temp": "^0.8.1",
+    "tree-kill": "^0.1.1",
+    "xregexp": "^2.0.0",
+    "lson": "^1.0.3"
   },
   "devDependencies": {
     "LiveScript": "^1.3.1",
     "jscs": "^1.9.0",
     "jshint": "^2.5.11"
+  },
+  "consumedServices": {
+    "builder": {
+      "versions": {
+        "^1.0.0": "consumeBuilder"
+      }
+    }
   },
   "scripts": {
     "test": "./node_modules/.bin/jscs lib/*.js spec/*.js && ./node_modules/.bin/jshint lib/*.js spec/*.js",
