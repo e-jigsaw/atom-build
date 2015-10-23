@@ -3,7 +3,7 @@
 
 var fs = require('fs-extra');
 var temp = require('temp');
-var specHelpers = require('./spec-helpers');
+var specHelpers = require('atom-build-spec-helpers');
 
 describe('Keymap', function() {
   var directory = null;
@@ -200,7 +200,7 @@ describe('Keymap', function() {
         }));
       });
 
-      waits(300); // .atom-build.json is reloaded automatically
+      waits(300); // Custom file is reloaded automatically
 
       runs(function () {
         specHelpers.keydown('k', { ctrl: true, alt: true, element: workspaceElement });
