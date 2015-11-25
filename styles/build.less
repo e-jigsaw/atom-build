@@ -4,6 +4,7 @@
 .build {
 
   height: 100%;
+  font-family: 'Menlo', 'Consolas', 'DejaVu Sans Mono', monospace;
 
   .title {
     transition: background-color 0.2s ease-in;
@@ -12,7 +13,7 @@
   .build-timer {
     display: inline-block;
     width: 5em;
-    margin-right: 10px;
+    margin-right: @component-padding;
   }
 
   .title.error {
@@ -36,12 +37,11 @@
   .output {
     transition: 0.5s ease-in-out;
     transition-property: width, height;
-    padding: 10px 0 @status-panel-height 10px;
+    padding: @component-padding 0 @status-panel-height @component-padding;
     min-height: 100px;
     overflow: auto;
     word-wrap: break-word;
     white-space: pre-wrap;
-    font-family: 'Menlo', 'Consolas', 'DejaVu Sans Mono', monospace;
   }
 
   .status {
@@ -63,7 +63,7 @@
 .btn-container {
   .btn {
     float: right;
-    margin: 10px 10px 0 0;
+    margin: @component-padding @component-padding 0 0;
     color: @text-color-info;
   }
 
@@ -73,5 +73,22 @@
 
   .new-row {
     clear: both;
+  }
+}
+
+.panel-left .build,
+.panel-right .build {
+  .btn-container {
+    float: none !important;
+    .new-row {
+      clear: none;
+    }
+    .btn:last-child {
+      margin-left: @component-padding;
+    }
+  }
+  .output {
+    min-width: 200px;
+    padding-right: @component-padding;
   }
 }
